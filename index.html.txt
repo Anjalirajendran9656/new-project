@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask Around Tally</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+
+        .question-section {
+            margin-bottom: 30px;
+        }
+
+        .question-input {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .question-input textarea {
+            width: 100%;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            color: white;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 120px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .question-input textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .question-input textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .category-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .category-btn:hover,
+        .category-btn.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .solutions-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 200px;
+        }
+
+        .solution-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ff6b6b;
+            transition: all 0.3s ease;
+        }
+
+        .solution-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .solution-title {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .solution-description {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        .no-solutions {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+            padding: 40px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: white;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .category-selector {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Ask Around Tally</h1>
+            <p>Get instant solutions to your Tally questions</p>
+        </div>
+
+        <div class="question-section">
+            <div class="question-input">
+                <textarea id="questionText" placeholder="Describe your Tally question or issue in detail..."></textarea>
+            </div>
+
+            <div class="category-selector">
+                <button class="category-btn active" data-category="general">General</button>
+                <button class="category-btn" data-category="accounting">Accounting</button>
+                <button class="category-btn" data-category="inventory">Inventory</button>
+                <button class="category-btn" data-category="reports">Reports</button>
+                <button class="category-btn" data-category="configuration">Configuration</button>
+                <button class="category-btn" data-category="troubleshooting">Troubleshooting</button>
+            </div>
+
+            <button class="submit-btn" onclick="searchSolutions()">Find Solutions</button>
+        </div>
+
+        <div class="solutions-section">
+            <div class="loading" id="loadingDiv">
+                <div class="spinner"></div>
+                <p>Searching for solutions...</p>
+            </div>
+            
+            <div id="solutionsContainer">
+                <div class="no-solutions">
+                    <p>Enter your question above and click "Find Solutions" to get help with Tally</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample solutions database
+        const solutionsDB = {
+            'backup': [
+                {
+                    title: 'How to Take Backup in Tally',
+                    description: 'Go to Gateway of Tally → Alter → Company → Select Company → Press Alt+B or use Backup option from company menu. Choose backup location and click Save.'
+                }
+            ],
+            'voucher': [
+                {
+                    title: 'Creating Vouchers in Tally',
+                    description: 'From Gateway of Tally, go to Accounting Vouchers → Select voucher type (Payment/Receipt/Journal/Sales/Purchase) → Enter details → Save with Ctrl+A.'
+                }
+            ],
+            'gst': [
+                {
+                    title: 'GST Configuration in Tally',
+                    description: 'Enable GST from F11 (Features) → Statutory & Taxation → Enable GST. Create tax ledgers and configure GST rates for different items.'
+                }
+            ],
+            'report': [
+                {
+                    title: 'Different Types of Reports in Tally',
+                    description: 'Access reports from Gateway → Display → Account Books (Ledger, Trial Balance) → Financial Statements (P&L, Balance Sheet) → GST Reports → Inventory Reports.'
+                }
+            ],
+            'password': [
+                {
+                    title: 'Password Protection in Tally',
+                    description: 'Go to Gateway → Alter → Company → Select Company → Security Control → Use Security Control: Yes → Set Admin Password and User Access Rights.'
+                }
+            ],
+            'error': [
+                {
+                    title: 'Common Tally Errors and Solutions',
+                    description: 'License errors: Check Tally license validity. Data errors: Use Alt+R to refresh. Printing issues: Check printer configuration in Tally and Windows.'
+                }
+            ]
+        };
+
+        let selectedCategory = 'general';
+
+        // Category selection
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedCategory = this.dataset.category;
+            });
+        });
+
+        function searchSolutions() {
+            const question = document.getElementById('questionText').value.trim();
+            const loadingDiv = document.getElementById('loadingDiv');
+            const solutionsContainer = document.getElementById('solutionsContainer');
+
+            if (!question) {
+                alert('Please enter your question first!');
+                return;
+            }
+
+            // Show loading
+            loadingDiv.style.display = 'block';
+            solutionsContainer.innerHTML = '';
+
+            // Simulate search delay
+            setTimeout(() => {
+                loadingDiv.style.display = 'none';
+                
+                // Search for relevant solutions
+                const foundSolutions = findRelevantSolutions(question.toLowerCase());
+                
+                if (foundSolutions.length > 0) {
+                    displaySolutions(foundSolutions);
+                } else {
+                    displayNoSolutions();
+                }
+            }, 1500);
+        }
+
+        function findRelevantSolutions(query) {
+            const solutions = [];
+            
+            // Search through solutions database
+            Object.keys(solutionsDB).forEach(key => {
+                if (query.includes(key)) {
+                    solutions.push(...solutionsDB[key]);
+                }
+            });
+
+            // If no specific matches, provide general solutions based on category
+            if (solutions.length === 0) {
+                switch (selectedCategory) {
+                    case 'accounting':
+                        solutions.push(solutionsDB['voucher'][0]);
+                        break;
+                    case 'reports':
+                        solutions.push(solutionsDB['report'][0]);
+                        break;
+                    case 'troubleshooting':
+                        solutions.push(solutionsDB['error'][0]);
+                        break;
+                    default:
+                        solutions.push(solutionsDB['backup'][0]);
+                }
+            }
+
+            return solutions;
+        }
+
+        function displaySolutions(solutions) {
+            const container = document.getElementById('solutionsContainer');
+            container.innerHTML = '';
+
+            solutions.forEach(solution => {
+                const solutionDiv = document.createElement('div');
+                solutionDiv.className = 'solution-item';
+                solutionDiv.innerHTML = `
+                    <div class="solution-title">${solution.title}</div>
+                    <div class="solution-description">${solution.description}</div>
+                `;
+                container.appendChild(solutionDiv);
+            });
+        }
+
+        function displayNoSolutions() {
+            const container = document.getElementById('solutionsContainer');
+            container.innerHTML = `
+                <div class="no-solutions">
+                    <p>No specific solutions found for your query. Please try rephrasing your question or contact Tally support for detailed assistance.</p>
+                </div>
+            `;
+        }
+
+        // Allow Enter key to submit (with Shift+Enter for new line)
+        document.getElementById('questionText').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                searchSolutions();
+            }
+        });
+    </script>
+</body>
+</html>
